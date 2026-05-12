@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Management</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="page-container">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>SecureDash</h2>
+                <p>Admin Panel</p>
+            </div>
+
+            <nav class="menu">
+                <a href="index.html">Dashboard</a>
+                <a href="file.html" class="active">File Management</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Header -->
+            <header class="header">
+                <div>
+                    <h1>File Management</h1>
+                    <p>Manage file status and monitor ransomware simulation activity.</p>
+                </div>
+
+                <div class="security-badge" id="monitoringBadge">
+                    <span class="badge-dot"></span>
+                    Monitoring Active
+                </div>
+            </header>
+
+            <!-- Warning Alert -->
+            <section class="warning-alert" id="warningAlert">
+                <div class="warning-icon">!</div>
+
+                <div>
+                    <h3>Ransomware Attack Detected</h3>
+                    <p id="warningText">
+                        Some files have been encrypted. Please check the file status below.
+                    </p>
+                </div>
+            </section>
+
+            <!-- File List -->
+            <section class="panel">
+                <div class="panel-header">
+                    <div>
+                        <h2>File List</h2>
+                        <p id="fileDescription">Showing current file status from system.</p>
+                    </div>
+
+                    <span class="normal-label" id="fileStatusLabel">Normal</span>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Original File</th>
+                                <th>Current File Name</th>
+                                <th>Type</th>
+                                <th>Size</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="fileTableBody">
+                            <!-- Data dummy/backend akan masuk di sini -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+
+    </div>
+
+    <script>
+        /*
+            Dummy data ini kondisi BELUM TERKENA RANSOMWARE.
+            Semua file masih Normal dan belum ada file .locked.
+
+            Nanti kalau backend mendeteksi file terkena ransomware,
+            backend bisa mengubah data menjadi:
+            currentName: "nama_file.locked"
+            currentUrl: "dummy-files/nama_file.locked"
+            status: "Encrypted"
+        */
+
+        const filesFromBackend = [
+            {
+                originalName: "laporan.pdf",
+                currentName: "laporan.pdf",
+                originalUrl: "dummy-files/laporan.pdf",
+                currentUrl: "dummy-files/laporan.pdf",
+                icon: "PDF",
+                type: "PDF Document",
+                size: "2.4 MB",
+                status: "Normal"
+            },
+            {
+                originalName: "data.csv",
+                currentName: "data.csv",
+                originalUrl: "dummy-files/data.csv",
+                currentUrl: "dummy-files/data.csv",
+                icon: "CSV",
+                type: "CSV File",
+                size: "850 KB",
+                status: "Normal"
+            },
+            {
+                originalName: "employee.docx",
+                currentName: "employee.docx",
+                originalUrl: "dummy-files/employee.docx",
+                currentUrl: "dummy-files/employee.docx",
+                icon: "DOC",
+                type: "Word Document",
+                size: "1.1 MB",
+                status: "Normal"
+            },
+            {
+                originalName: "foto_karyawan.png",
+                currentName: "foto_karyawan.png",
+                originalUrl: "dummy-files/foto_karyawan.png",
+                currentUrl: "dummy-files/foto_karyawan.png",
+                icon: "PNG",
+                type: "Image File",
+                size: "3.2 MB",
+                status: "Normal"
+            },
+            {
+                originalName: "database_backup.sql",
+                currentName: "database_backup.sql",
+                originalUrl: "dummy-files/database_backup.sql",
+                currentUrl: "dummy-files/database_backup.sql",
+                icon: "SQL",
+                type: "Database Backup",
+                size: "5.8 MB",
+                status: "Normal"
+            }
+        ];
+
+        function renderFiles(files) {
+            const tableBody = document.getElementById("fileTableBody");
+            const fileStatusLabel = document.getElementById("fileStatusLabel");
+            const fileDescription = document.getElementById("fileDescription");
+            const warningAlert = document.getElementById("warningAlert");
+            const warningText = document.getElementById("warningText");
+
+            tableBody.innerHTML = "";
+
+            let encryptedCount = 0;
+
+            files.forEach(file => {
+                const isEncrypted = file.status === "Encrypted";
+
+                if (isEncrypted) {
+                    encryptedCount++;
+                }
+
+                const currentIconText = isEncrypted ? "!" : file.icon;
+                const currentIconClass = isEncrypted ? "danger-file" : "normal-file";
+                const statusClass = isEncrypted ? "encrypted-status" : "normal-status";
+                const currentType = isEncrypted ? "Locked File" : file.type;
+
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>
+                            <a href="${file.originalUrl}" target="_blank" class="file-link">
+                                <div class="file-name">
+                                    <span class="file-icon normal-file">${file.icon}</span>
+                                    ${file.originalName}
+                                </div>
+                            </a>
+                        </td>
+
+                        <td>
+                            <a href="${file.currentUrl}" target="_blank" class="file-link">
+                                <div class="file-name">
+                                    <span class="file-icon ${currentIconClass}">${currentIconText}</span>
+                                    ${file.currentName}
+                                </div>
+                            </a>
+                        </td>
+
+                        <td>${currentType}</td>
+                        <td>${file.size}</td>
+
+                        <td>
+                            <span class="status ${statusClass}">
+                                ${file.status}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            if (encryptedCount > 0) {
+                warningAlert.style.display = "flex";
+
+                fileStatusLabel.textContent = "Threat Detected";
+                fileStatusLabel.className = "danger-label";
+                fileDescription.textContent = encryptedCount + " encrypted file(s) detected by the system.";
+
+                warningText.textContent = encryptedCount + " file(s) have been encrypted with .locked extension.";
+            } else {
+                warningAlert.style.display = "none";
+
+                fileStatusLabel.textContent = "Normal";
+                fileStatusLabel.className = "normal-label";
+                fileDescription.textContent = "All files are currently safe.";
+            }
+        }
+
+        renderFiles(filesFromBackend);
+
+        /*
+            Nanti kalau backend sudah jadi, bagian filesFromBackend bisa diganti fetch:
+
+            fetch("http://localhost:5000/api/files")
+                .then(response => response.json())
+                .then(data => renderFiles(data))
+                .catch(error => console.log(error));
+        */
+    </script>
+
+</body>
+</html>

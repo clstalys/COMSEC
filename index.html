@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="dashboard-container">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>SecureDash</h2>
+                <p>Admin Panel</p>
+            </div>
+
+            <nav class="menu">
+                <a href="index.html" class="active">Dashboard</a>
+                <a href="file.html">File Management</a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Header -->
+            <header class="header">
+                <div>
+                    <h1>Dashboard</h1>
+                    <p>Welcome Admin, monitor your system activity here.</p>
+                </div>
+
+                <div class="admin-profile">
+                    <span>Admin</span>
+                    <div class="avatar">A</div>
+                </div>
+            </header>
+
+            <!-- Statistic Cards -->
+            <section class="stats-grid">
+
+                <div class="stat-card">
+                    <p>Total Files</p>
+                    <h2>24</h2>
+                    <span>Uploaded documents</span>
+                </div>
+
+                <div class="stat-card">
+                    <p>Active Users</p>
+                    <h2>5</h2>
+                    <span>Currently online</span>
+                </div>
+
+                <div class="stat-card warning">
+                    <p>Security Status</p>
+                    <h2>SAFE</h2>
+                    <span>No major threat detected</span>
+                </div>
+
+            </section>
+
+            <!-- Content Grid -->
+            <section class="content-grid">
+
+                <!-- Dummy Chart -->
+                <div class="panel chart-panel">
+                    <div class="panel-header">
+                        <h3>File Upload Statistics</h3>
+                    </div>
+
+                    <div class="bar-chart">
+                        <div class="bar" style="height: 45%;">
+                            <span>Mon</span>
+                        </div>
+                        <div class="bar" style="height: 70%;">
+                            <span>Tue</span>
+                        </div>
+                        <div class="bar" style="height: 55%;">
+                            <span>Wed</span>
+                        </div>
+                        <div class="bar" style="height: 85%;">
+                            <span>Thu</span>
+                        </div>
+                        <div class="bar" style="height: 60%;">
+                            <span>Fri</span>
+                        </div>
+                        <div class="bar" style="height: 40%;">
+                            <span>Sat</span>
+                        </div>
+                        <div class="bar" style="height: 75%;">
+                            <span>Sun</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="panel activity-panel">
+                    <div class="panel-header">
+                        <h3>Recent Activity</h3>
+                        <p>Latest file activity</p>
+                    </div>
+
+                    <div class="activity-list">
+
+                        <div class="activity-item">
+                            <div class="activity-dot"></div>
+                            <div>
+                                <h4>report.pdf uploaded</h4>
+                                <p>Admin uploaded a new file</p>
+                            </div>
+                            <span>2 min ago</span>
+                        </div>
+
+                        <div class="activity-item">
+                            <div class="activity-dot"></div>
+                            <div>
+                                <h4>data_backup.zip scanned</h4>
+                                <p>Security scan completed</p>
+                            </div>
+                            <span>10 min ago</span>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-dot"></div>
+                            <div>
+                                <h4>image_assets.png uploaded</h4>
+                                <p>New image file added</p>
+                            </div>
+                            <span>30 min ago</span>
+                        </div>
+
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Employee Panel -->
+            <section class="panel employee-panel">
+                <div class="panel-header">
+                    <h3>Employee Panel</h3>
+                    <p>Active employee access overview</p>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Last Upload</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr>
+                            <td>Admin User</td>
+                            <td>Administrator</td>
+                            <td><span class="status active-status">Active</span></td>
+                            <td>report.pdf</td>
+                        </tr>
+
+                        <tr>
+                            <td>John Doe</td>
+                            <td>Employee</td>
+                            <td><span class="status active-status">Active</span></td>
+                            <td>document.docx</td>
+                        </tr>
+
+                        <tr>
+                            <td>Sarah Lee</td>
+                            <td>Employee</td>
+                            <td><span class="status inactive-status">Offline</span></td>
+                            <td>backup.zip</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+        </main>
+
+    </div>
+
+</body>
+</html>
