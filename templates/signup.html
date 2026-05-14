@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BSI Sign Up</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="login-page">
+
+    <div class="login-container">
+
+        <!-- SIGN UP LEFT SIDE -->
+        <div class="login-left">
+            <div class="login-content">
+                <img
+                    src="images/logoBSI.png"
+                    alt="BSI Logo"
+                    class="login-logo-img"
+                >
+
+                <div class="security-badges">
+                    <span>🔒 Secure</span>
+                    <span>✓ Trusted</span>
+                    <span>⭐ Professional</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="login-right">
+
+            <div class="login-header">
+                <h2>Create Account</h2>
+                <p class="login-subtitle">Sign up untuk membuat akun baru.</p>
+            </div>
+
+            <form id="signupForm">
+
+                <div class="login-form-group">
+                    <label>Email</label>
+
+                    <input
+                        type="email"
+                        id="signupEmail"
+                        placeholder="Enter your email"
+                        required
+                    >
+                </div>
+
+                <div class="login-form-group">
+                    <label>Password</label>
+
+                    <input
+                        type="password"
+                        id="signupPassword"
+                        placeholder="Enter your password"
+                        required
+                    >
+                </div>
+
+                <div class="login-form-group">
+                    <label>Confirm Password</label>
+
+                    <input
+                        type="password"
+                        id="confirmPassword"
+                        placeholder="Confirm your password"
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="login-btn">
+                    Sign Up
+                </button>
+
+            </form>
+
+            <div class="login-link">
+                <p>Sudah punya akun? <a href="login.html">Login disini</a></p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="signup.js"></script>
+
+</body>
+</html>

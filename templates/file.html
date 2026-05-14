@@ -87,70 +87,6 @@
     </div>
 
     <script>
-        /*
-            Dummy data ini kondisi BELUM TERKENA RANSOMWARE.
-            Semua file masih Normal dan belum ada file .locked.
-
-            Nanti kalau backend mendeteksi file terkena ransomware,
-            backend bisa mengubah data menjadi:
-            currentName: "nama_file.locked"
-            currentUrl: "dummy-files/nama_file.locked"
-            status: "Encrypted"
-        */
-
-        const filesFromBackend = [
-            {
-                originalName: "laporan.pdf",
-                currentName: "laporan.pdf",
-                originalUrl: "dummy-files/laporan.pdf",
-                currentUrl: "dummy-files/laporan.pdf",
-                icon: "PDF",
-                type: "PDF Document",
-                size: "2.4 MB",
-                status: "Normal"
-            },
-            {
-                originalName: "data.csv",
-                currentName: "data.csv",
-                originalUrl: "dummy-files/data.csv",
-                currentUrl: "dummy-files/data.csv",
-                icon: "CSV",
-                type: "CSV File",
-                size: "850 KB",
-                status: "Normal"
-            },
-            {
-                originalName: "employee.docx",
-                currentName: "employee.docx",
-                originalUrl: "dummy-files/employee.docx",
-                currentUrl: "dummy-files/employee.docx",
-                icon: "DOC",
-                type: "Word Document",
-                size: "1.1 MB",
-                status: "Normal"
-            },
-            {
-                originalName: "foto_karyawan.png",
-                currentName: "foto_karyawan.png",
-                originalUrl: "dummy-files/foto_karyawan.png",
-                currentUrl: "dummy-files/foto_karyawan.png",
-                icon: "PNG",
-                type: "Image File",
-                size: "3.2 MB",
-                status: "Normal"
-            },
-            {
-                originalName: "database_backup.sql",
-                currentName: "database_backup.sql",
-                originalUrl: "dummy-files/database_backup.sql",
-                currentUrl: "dummy-files/database_backup.sql",
-                icon: "SQL",
-                type: "Database Backup",
-                size: "5.8 MB",
-                status: "Normal"
-            }
-        ];
-
         function renderFiles(files) {
             const tableBody = document.getElementById("fileTableBody");
             const fileStatusLabel = document.getElementById("fileStatusLabel");
@@ -163,7 +99,9 @@
             let encryptedCount = 0;
 
             files.forEach(file => {
-                const isEncrypted = file.status === "Encrypted";
+                const isEncrypted =
+                    file.status === "Encrypted" ||
+                    (file.currentName && String(file.currentName).endsWith(".locked"));
 
                 if (isEncrypted) {
                     encryptedCount++;
@@ -223,16 +161,21 @@
             }
         }
 
-        renderFiles(filesFromBackend);
-
-        /*
-            Nanti kalau backend sudah jadi, bagian filesFromBackend bisa diganti fetch:
-
-            fetch("http://localhost:5000/api/files")
-                .then(response => response.json())
-                .then(data => renderFiles(data))
-                .catch(error => console.log(error));
-        */
+        fetch("/api/files")
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error("HTTP " + response.status);
+                }
+                return response.json();
+            })
+            .then(function (data) {
+                const list = Array.isArray(data) ? data : [];
+                renderFiles(list);
+            })
+            .catch(function (error) {
+                console.log(error);
+                renderFiles([]);
+            });
     </script>
 
 </body>
