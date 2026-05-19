@@ -4,179 +4,261 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>File Management</title>
-
     <link rel="stylesheet" href="style.css">
+    <style>
+        .action-bar { display:flex; gap:12px; margin-bottom:16px; }
+        .btn-encrypt {
+            padding: 9px 20px; border:none; border-radius:6px; cursor:pointer;
+            font-weight:600; font-size:14px;
+            background:#dc2626; color:#fff; transition:background .2s;
+        }
+        .btn-encrypt:hover { background:#b91c1c; }
+        .btn-decrypt {
+            padding: 9px 20px; border:none; border-radius:6px; cursor:pointer;
+            font-weight:600; font-size:14px;
+            background:#16a34a; color:#fff; transition:background .2s;
+        }
+        .btn-decrypt:hover { background:#15803d; }
+        .btn-encrypt:disabled, .btn-decrypt:disabled { opacity:.5; cursor:not-allowed; }
+
+        .size-change { font-size:11px; color:#6b7280; margin-top:2px; }
+        .size-up   { color:#dc2626; font-weight:600; }
+        .size-down { color:#16a34a; font-weight:600; }
+
+        .algo-badge {
+            display:inline-block; background:#fef3c7; color:#92400e;
+            border:1px solid #fcd34d; border-radius:4px;
+            font-size:11px; font-weight:700; padding:1px 6px; margin-left:6px;
+        }
+        #toastMsg {
+            display:none; position:fixed; bottom:28px; right:28px;
+            background:#1e293b; color:#fff; padding:12px 20px;
+            border-radius:8px; font-size:14px; z-index:9999;
+            box-shadow:0 4px 12px rgba(0,0,0,.25);
+        }
+    </style>
 </head>
 <body>
+<div class="page-container">
 
-    <div class="page-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <h2>SecureDash</h2>
+            <p>Admin Panel</p>
+        </div>
+        <nav class="menu">
+            <a href="index.html">Dashboard</a>
+            <a href="file.html" class="active">File Management</a>
+        </nav>
+    </aside>
 
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="logo">
-                <h2>SecureDash</h2>
-                <p>Admin Panel</p>
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <header class="header">
+            <div>
+                <h1>File Management</h1>
+                <p>Manage file status and monitor ransomware simulation activity.</p>
+            </div>
+            <div class="security-badge" id="monitoringBadge">
+                <span class="badge-dot"></span>
+                Monitoring Active
+            </div>
+        </header>
+
+        <!-- Warning Alert -->
+        <section class="warning-alert" id="warningAlert" style="display:none;">
+            <div class="warning-icon">!</div>
+            <div>
+                <h3>Ransomware Attack Detected</h3>
+                <p id="warningText">Some files have been encrypted with AES-128 CBC.</p>
+            </div>
+        </section>
+
+        <!-- Encrypt / Decrypt Buttons -->
+        <div class="action-bar">
+            <button class="btn-encrypt" id="btnEncrypt" onclick="runEncrypt()">
+                🔒 Simulate Encrypt (AES-128)
+            </button>
+            <button class="btn-decrypt" id="btnDecrypt" onclick="runDecrypt()">
+                🔓 Recovery / Decrypt
+            </button>
+        </div>
+
+        <!-- File List -->
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2>File List</h2>
+                    <p id="fileDescription">Showing current file status from system.</p>
+                </div>
+                <span class="normal-label" id="fileStatusLabel">Normal</span>
             </div>
 
-            <nav class="menu">
-                <a href="index.html">Dashboard</a>
-                <a href="file.html" class="active">File Management</a>
-            </nav>
-        </aside>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Original File</th>
+                            <th>Current File Name</th>
+                            <th>Type</th>
+                            <th>Size</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fileTableBody"></tbody>
+                </table>
+            </div>
+        </section>
 
-        <!-- Main Content -->
-        <main class="main-content">
+    </main>
+</div>
 
-            <!-- Header -->
-            <header class="header">
-                <div>
-                    <h1>File Management</h1>
-                    <p>Manage file status and monitor ransomware simulation activity.</p>
-                </div>
+<!-- Toast notification -->
+<div id="toastMsg"></div>
 
-                <div class="security-badge" id="monitoringBadge">
-                    <span class="badge-dot"></span>
-                    Monitoring Active
-                </div>
-            </header>
+<script>
+    // ── Size change cache dari hasil API encrypt/decrypt ──
+    let sizeChangeMap = {};
 
-            <!-- Warning Alert -->
-            <section class="warning-alert" id="warningAlert">
-                <div class="warning-icon">!</div>
+    function showToast(msg, duration = 3000) {
+        const t = document.getElementById("toastMsg");
+        t.textContent = msg;
+        t.style.display = "block";
+        setTimeout(() => { t.style.display = "none"; }, duration);
+    }
 
-                <div>
-                    <h3>Ransomware Attack Detected</h3>
-                    <p id="warningText">
-                        Some files have been encrypted. Please check the file status below.
-                    </p>
-                </div>
-            </section>
+    function renderFiles(files) {
+        const tbody      = document.getElementById("fileTableBody");
+        const statusLbl  = document.getElementById("fileStatusLabel");
+        const fileDesc   = document.getElementById("fileDescription");
+        const warnAlert  = document.getElementById("warningAlert");
+        const warnText   = document.getElementById("warningText");
 
-            <!-- File List -->
-            <section class="panel">
-                <div class="panel-header">
-                    <div>
-                        <h2>File List</h2>
-                        <p id="fileDescription">Showing current file status from system.</p>
-                    </div>
+        tbody.innerHTML = "";
+        let encryptedCount = 0;
 
-                    <span class="normal-label" id="fileStatusLabel">Normal</span>
-                </div>
+        files.forEach(file => {
+            const isEncrypted = file.status.startsWith("Encrypted") ||
+                                file.currentName.endsWith(".locked");
+            if (isEncrypted) encryptedCount++;
 
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Original File</th>
-                                <th>Current File Name</th>
-                                <th>Type</th>
-                                <th>Size</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
+            const iconClass   = isEncrypted ? "danger-file"      : "normal-file";
+            const iconLabel   = isEncrypted ? "!"                 : file.icon;
+            const statusClass = isEncrypted ? "encrypted-status"  : "normal-status";
+            const displayType = isEncrypted ? "Locked File"        : file.type;
 
-                        <tbody id="fileTableBody">
-                            <!-- Data dummy/backend akan masuk di sini -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-        </main>
-
-    </div>
-
-    <script>
-        function renderFiles(files) {
-            const tableBody = document.getElementById("fileTableBody");
-            const fileStatusLabel = document.getElementById("fileStatusLabel");
-            const fileDescription = document.getElementById("fileDescription");
-            const warningAlert = document.getElementById("warningAlert");
-            const warningText = document.getElementById("warningText");
-
-            tableBody.innerHTML = "";
-
-            let encryptedCount = 0;
-
-            files.forEach(file => {
-                const isEncrypted =
-                    file.status === "Encrypted" ||
-                    (file.currentName && String(file.currentName).endsWith(".locked"));
-
-                if (isEncrypted) {
-                    encryptedCount++;
+            // Size change annotation
+            let sizeExtra = "";
+            if (sizeChangeMap[file.originalName]) {
+                const diff = sizeChangeMap[file.originalName];
+                if (isEncrypted && diff > 0) {
+                    sizeExtra = `<div class="size-change">+${diff} B <span class="size-up">(padding AES)</span></div>`;
+                } else if (!isEncrypted && diff > 0) {
+                    sizeExtra = `<div class="size-change">-${diff} B <span class="size-down">(padding dihapus)</span></div>`;
                 }
-
-                const currentIconText = isEncrypted ? "!" : file.icon;
-                const currentIconClass = isEncrypted ? "danger-file" : "normal-file";
-                const statusClass = isEncrypted ? "encrypted-status" : "normal-status";
-                const currentType = isEncrypted ? "Locked File" : file.type;
-
-                tableBody.innerHTML += `
-                    <tr>
-                        <td>
-                            <a href="${file.originalUrl}" target="_blank" class="file-link">
-                                <div class="file-name">
-                                    <span class="file-icon normal-file">${file.icon}</span>
-                                    ${file.originalName}
-                                </div>
-                            </a>
-                        </td>
-
-                        <td>
-                            <a href="${file.currentUrl}" target="_blank" class="file-link">
-                                <div class="file-name">
-                                    <span class="file-icon ${currentIconClass}">${currentIconText}</span>
-                                    ${file.currentName}
-                                </div>
-                            </a>
-                        </td>
-
-                        <td>${currentType}</td>
-                        <td>${file.size}</td>
-
-                        <td>
-                            <span class="status ${statusClass}">
-                                ${file.status}
-                            </span>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            if (encryptedCount > 0) {
-                warningAlert.style.display = "flex";
-
-                fileStatusLabel.textContent = "Threat Detected";
-                fileStatusLabel.className = "danger-label";
-                fileDescription.textContent = encryptedCount + " encrypted file(s) detected by the system.";
-
-                warningText.textContent = encryptedCount + " file(s) have been encrypted with .locked extension.";
-            } else {
-                warningAlert.style.display = "none";
-
-                fileStatusLabel.textContent = "Normal";
-                fileStatusLabel.className = "normal-label";
-                fileDescription.textContent = "All files are currently safe.";
             }
+
+            // Algorithm badge only when encrypted
+            const algoBadge = isEncrypted
+                ? `<span class="algo-badge">AES-128-CBC</span>`
+                : "";
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>
+                        <a href="${file.originalUrl}" target="_blank" class="file-link">
+                            <div class="file-name">
+                                <span class="file-icon normal-file">${file.icon}</span>
+                                ${file.originalName}
+                            </div>
+                        </a>
+                    </td>
+                    <td>
+                        <div class="file-name">
+                            <span class="file-icon ${iconClass}">${iconLabel}</span>
+                            ${file.currentName}${algoBadge}
+                        </div>
+                    </td>
+                    <td>${displayType}</td>
+                    <td>${file.size}${sizeExtra}</td>
+                    <td><span class="status ${statusClass}">${file.status}</span></td>
+                </tr>`;
+        });
+
+        if (encryptedCount > 0) {
+            warnAlert.style.display = "flex";
+            statusLbl.textContent   = "Threat Detected";
+            statusLbl.className     = "danger-label";
+            fileDesc.textContent    = `${encryptedCount} encrypted file(s) detected.`;
+            warnText.textContent    = `${encryptedCount} file(s) dienkripsi dengan AES-128 CBC.`;
+        } else {
+            warnAlert.style.display = "none";
+            statusLbl.textContent   = "Normal";
+            statusLbl.className     = "normal-label";
+            fileDesc.textContent    = "All files are currently safe.";
         }
+    }
 
+    function loadFiles() {
         fetch("/api/files")
-            .then(function (response) {
-                if (!response.ok) {
-                    throw new Error("HTTP " + response.status);
-                }
-                return response.json();
-            })
-            .then(function (data) {
-                const list = Array.isArray(data) ? data : [];
-                renderFiles(list);
-            })
-            .catch(function (error) {
-                console.log(error);
-                renderFiles([]);
-            });
-    </script>
+            .then(r => r.json())
+            .then(data => renderFiles(Array.isArray(data) ? data : []))
+            .catch(() => renderFiles([]));
+    }
 
+    function runEncrypt() {
+        const btn = document.getElementById("btnEncrypt");
+        btn.disabled = true;
+        btn.textContent = "Encrypting…";
+        showToast("Menjalankan simulasi enkripsi AES-128…", 5000);
+
+        fetch("/api/encrypt", { method: "POST" })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === "success" && data.files) {
+                    // Build size change map: originalName -> size_difference
+                    data.files.forEach(f => {
+                        sizeChangeMap[f.original_name] = f.size_difference;
+                    });
+                }
+                showToast(data.message || "Enkripsi selesai.");
+                loadFiles();
+            })
+            .catch(e => showToast("Error: " + e))
+            .finally(() => {
+                btn.disabled    = false;
+                btn.textContent = "🔒 Simulate Encrypt (AES-128)";
+            });
+    }
+
+    function runDecrypt() {
+        const btn = document.getElementById("btnDecrypt");
+        btn.disabled = true;
+        btn.textContent = "Decrypting…";
+        showToast("Menjalankan proses recovery/dekripsi…", 5000);
+
+        fetch("/api/decrypt", { method: "POST" })
+            .then(r => r.json())
+            .then(data => {
+                if (data.status === "success" && data.files) {
+                    data.files.forEach(f => {
+                        sizeChangeMap[f.restored_name] = f.size_difference;
+                    });
+                }
+                showToast(data.message || "Dekripsi selesai.");
+                loadFiles();
+            })
+            .catch(e => showToast("Error: " + e))
+            .finally(() => {
+                btn.disabled    = false;
+                btn.textContent = "🔓 Recovery / Decrypt";
+            });
+    }
+
+    // Load on page start
+    loadFiles();
+</script>
 </body>
 </html>
