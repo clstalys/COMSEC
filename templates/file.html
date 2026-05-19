@@ -59,7 +59,7 @@
         <header class="header">
             <div>
                 <h1>File Management</h1>
-                <p>Manage file status and monitor ransomware simulation activity.</p>
+                <p>Manage file status and monitor enkripsi simulation activity.</p>
             </div>
             <div class="security-badge" id="monitoringBadge">
                 <span class="badge-dot"></span>
@@ -67,12 +67,12 @@
             </div>
         </header>
 
-        <!-- Warning Alert -->
+        <!-- Warning Alert — hanya muncul saat ada file terenkripsi -->
         <section class="warning-alert" id="warningAlert" style="display:none;">
             <div class="warning-icon">!</div>
             <div>
-                <h3>Ransomware Attack Detected</h3>
-                <p id="warningText">Some files have been encrypted with AES-128 CBC.</p>
+                <h3>Enkripsi Terdeteksi</h3>
+                <p id="warningText">Beberapa file telah dienkripsi dengan AES-128 CBC.</p>
             </div>
         </section>
 
@@ -119,7 +119,6 @@
 <div id="toastMsg"></div>
 
 <script>
-    // ── Size change cache dari hasil API encrypt/decrypt ──
     let sizeChangeMap = {};
 
     function showToast(msg, duration = 3000) {
@@ -130,40 +129,37 @@
     }
 
     function renderFiles(files) {
-        const tbody      = document.getElementById("fileTableBody");
-        const statusLbl  = document.getElementById("fileStatusLabel");
-        const fileDesc   = document.getElementById("fileDescription");
-        const warnAlert  = document.getElementById("warningAlert");
-        const warnText   = document.getElementById("warningText");
+        const tbody     = document.getElementById("fileTableBody");
+        const statusLbl = document.getElementById("fileStatusLabel");
+        const fileDesc  = document.getElementById("fileDescription");
+        const warnAlert = document.getElementById("warningAlert");
+        const warnText  = document.getElementById("warningText");
 
         tbody.innerHTML = "";
         let encryptedCount = 0;
 
         files.forEach(file => {
-            const isEncrypted = file.status.startsWith("Encrypted") ||
-                                file.currentName.endsWith(".locked");
+            const isEncrypted = file.currentName.endsWith(".locked");
             if (isEncrypted) encryptedCount++;
 
             const iconClass   = isEncrypted ? "danger-file"      : "normal-file";
             const iconLabel   = isEncrypted ? "!"                 : file.icon;
             const statusClass = isEncrypted ? "encrypted-status"  : "normal-status";
+            const statusText  = isEncrypted ? "Encrypted (AES-128)" : "Normal";
             const displayType = isEncrypted ? "Locked File"        : file.type;
 
-            // Size change annotation
             let sizeExtra = "";
             if (sizeChangeMap[file.originalName]) {
                 const diff = sizeChangeMap[file.originalName];
                 if (isEncrypted && diff > 0) {
-                    sizeExtra = `<div class="size-change">+${diff} B <span class="size-up">(padding AES)</span></div>`;
+                    sizeExtra = `<div class="size-change">+${diff} B <span class="size-up">(PKCS7 padding)</span></div>`;
                 } else if (!isEncrypted && diff > 0) {
                     sizeExtra = `<div class="size-change">-${diff} B <span class="size-down">(padding dihapus)</span></div>`;
                 }
             }
 
-            // Algorithm badge only when encrypted
             const algoBadge = isEncrypted
-                ? `<span class="algo-badge">AES-128-CBC</span>`
-                : "";
+                ? `<span class="algo-badge">AES-128-CBC</span>` : "";
 
             tbody.innerHTML += `
                 <tr>
@@ -183,21 +179,23 @@
                     </td>
                     <td>${displayType}</td>
                     <td>${file.size}${sizeExtra}</td>
-                    <td><span class="status ${statusClass}">${file.status}</span></td>
+                    <td><span class="status ${statusClass}">${statusText}</span></td>
                 </tr>`;
         });
 
         if (encryptedCount > 0) {
+            // Tampilan saat ada file terenkripsi
             warnAlert.style.display = "flex";
-            statusLbl.textContent   = "Threat Detected";
+            statusLbl.textContent   = "Enkripsi Aktif";
             statusLbl.className     = "danger-label";
-            fileDesc.textContent    = `${encryptedCount} encrypted file(s) detected.`;
-            warnText.textContent    = `${encryptedCount} file(s) dienkripsi dengan AES-128 CBC.`;
+            fileDesc.textContent    = `${encryptedCount} file(s) terenkripsi dengan AES-128 CBC.`;
+            warnText.textContent    = `${encryptedCount} file(s) telah dienkripsi dengan AES-128 CBC.`;
         } else {
+            // Tampilan normal (default saat pertama buka)
             warnAlert.style.display = "none";
             statusLbl.textContent   = "Normal";
             statusLbl.className     = "normal-label";
-            fileDesc.textContent    = "All files are currently safe.";
+            fileDesc.textContent    = "Semua file dalam kondisi normal dan dapat diakses.";
         }
     }
 
@@ -218,7 +216,6 @@
             .then(r => r.json())
             .then(data => {
                 if (data.status === "success" && data.files) {
-                    // Build size change map: originalName -> size_difference
                     data.files.forEach(f => {
                         sizeChangeMap[f.original_name] = f.size_difference;
                     });
@@ -257,7 +254,7 @@
             });
     }
 
-    // Load on page start
+    // Load saat halaman pertama dibuka — default tampil Normal
     loadFiles();
 </script>
 </body>
